@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -18,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -92,14 +95,11 @@ public class DynamicRedisConfig {
             convertRedisUriToRedisConfig();
         }
         if (RedisModeEnum.SINGLE_MODE.getKey().equals(redisConfig.getRedisMode())) {
-            System.out.println("单机");
             return createStandaloneConnectionFactory();
         } else if (RedisModeEnum.CLUSTER_MODE.getKey().equals(redisConfig.getRedisMode())) {
-            System.out.println("集群");
-            return null;
-//            return createClusterConnectionFactory();
+            return createClusterConnectionFactory();
         } else if (RedisModeEnum.SENTINEL_MODE.getKey().equals(redisConfig.getRedisMode())) {
-            System.out.println("哨兵");
+//            todo
             return null;
 //            return createSentinelConnectionFactory();
         } else {
@@ -107,7 +107,6 @@ public class DynamicRedisConfig {
             throw new RuntimeException("不支持的redis mode");
         }
     }
-
 
     private LettuceConnectionFactory createStandaloneConnectionFactory() {
         // 单机模式配置
@@ -119,6 +118,36 @@ public class DynamicRedisConfig {
         Optional.ofNullable(redisConfig.getRedisDatabase()).ifPresent(config::setDatabase);
         return new LettuceConnectionFactory(config, buildLettuceClientConfiguration());
     }
+
+    private LettuceConnectionFactory createClusterConnectionFactory() {
+        // 集群模式配置
+        RedisClusterConfiguration config = new RedisClusterConfiguration();
+        try {
+            Arrays.stream(redisConfig.getRedisClusterNodes().split(",")).forEach(n -> {
+                String[] hostAndPort = n.split(":");
+                config.addClusterNode(new RedisNode(hostAndPort[0], Integer.parseInt(hostAndPort[1])));
+            });
+        } catch (Exception e) {
+            log.error("redis cluster nodes格式异常,{}", redisConfig.getRedisClusterNodes());
+            throw new RuntimeException("redis cluster nodes格式异常");
+        }
+        Optional.ofNullable(redisConfig.getRedisClusterMaxRedirects()).filter(p -> p > 0).ifPresent(config::setMaxRedirects);
+        Optional.ofNullable(redisConfig.getRedisPassword()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(config::setPassword);
+        Optional.ofNullable(redisConfig.getRedisUsername()).filter(u -> !StringUtils.isEmpty(u)).ifPresent(config::setUsername);
+        return new LettuceConnectionFactory(config, buildLettuceClientConfiguration());
+    }
+//
+//    private LettuceConnectionFactory createSentinelConnectionFactory() {
+//        // 哨兵模式配置
+//        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration()
+//                .master("mymaster")
+//                .sentinel("sentinel1", 26379)
+//                .sentinel("sentinel2", 26379)
+//                .sentinel("sentinel3", 26379);
+//        sentinelConfig.setPassword("yourpassword");
+//        return new LettuceConnectionFactory(sentinelConfig);
+//    }
+
 
     private LettuceClientConfiguration buildLettuceClientConfiguration() {
         LettucePoolingClientConfiguration.LettucePoolingClientConfigurationBuilder builder = LettucePoolingClientConfiguration.builder();
@@ -134,31 +163,4 @@ public class DynamicRedisConfig {
         builder.poolConfig(poolConfig);
         return builder.build();
     }
-
-//    private LettuceConnectionFactory createClusterConnectionFactory() {
-//        // 集群模式配置
-//        RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration();
-//        clusterConfig.addClusterNode(new RedisNode("10.242.41.153", 7001));
-//        clusterConfig.addClusterNode(new RedisNode("10.242.41.153", 7002));
-//        clusterConfig.addClusterNode(new RedisNode("10.242.41.153", 7003));
-//        clusterConfig.setPassword("yourpassword"); // 集群密码
-//        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-//                .commandTimeout(Duration.ofSeconds(2))
-//                .shutdownTimeout(Duration.ZERO)
-//                .build();
-//
-//        return new LettuceConnectionFactory(clusterConfig, clientConfig);
-//
-//    }
-//
-//    private LettuceConnectionFactory createSentinelConnectionFactory() {
-//        // 哨兵模式配置
-//        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration()
-//                .master("mymaster")
-//                .sentinel("sentinel1", 26379)
-//                .sentinel("sentinel2", 26379)
-//                .sentinel("sentinel3", 26379);
-//        sentinelConfig.setPassword("yourpassword");
-//        return new LettuceConnectionFactory(sentinelConfig);
-//    }
 }

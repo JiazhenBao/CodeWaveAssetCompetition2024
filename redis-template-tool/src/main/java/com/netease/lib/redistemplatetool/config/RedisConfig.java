@@ -66,7 +66,7 @@ public class RedisConfig {
      */
     @NaslConfiguration
     @Value("${redisClusterMaxRedirects}")
-    public String redisClusterMaxRedirects;
+    public Integer redisClusterMaxRedirects;
     /**
      * Redis 数据库索引
      */
@@ -132,148 +132,148 @@ public class RedisConfig {
         return redisUsername;
     }
 
+    public void setRedisUsername(String redisUsername) {
+        this.redisUsername = redisUsername;
+    }
+
     public String getRedisMode() {
         return redisMode;
-    }
-
-    public String getRedisHost() {
-        return redisHost;
-    }
-
-    public Integer getRedisPort() {
-        return redisPort;
-    }
-
-    public String getRedisPassword() {
-        return redisPassword;
-    }
-
-    public String getRedisSentinelMaster() {
-        return redisSentinelMaster;
-    }
-
-    public String getRedisSentinelNodes() {
-        return redisSentinelNodes;
-    }
-
-    public String getRedisClusterNodes() {
-        return redisClusterNodes;
-    }
-
-    public String getRedisClusterMaxRedirects() {
-        return redisClusterMaxRedirects;
-    }
-
-    public Integer getRedisDatabase() {
-        return redisDatabase;
-    }
-
-    public Long getSpringRedisTimeout() {
-        return springRedisTimeout;
-    }
-
-    public String getSpringRedisSsl() {
-        return springRedisSsl;
-    }
-
-    public String getRedisUrl() {
-        return redisUrl;
-    }
-
-    public String getRedisClientName() {
-        return redisClientName;
-    }
-
-    public Integer getSpringRedisLettucePoolMaxActive() {
-        return springRedisLettucePoolMaxActive;
-    }
-
-    public Integer getSpringRedisLettucePoolMaxIdle() {
-        return springRedisLettucePoolMaxIdle;
-    }
-
-    public Integer getSpringRedisLettucePoolMinIdle() {
-        return springRedisLettucePoolMinIdle;
-    }
-
-    public Integer getSpringRedisLettucePoolMaxWait() {
-        return springRedisLettucePoolMaxWait;
-    }
-
-    public Long getSpringRedisLettuceShutdownTimeout() {
-        return springRedisLettuceShutdownTimeout;
     }
 
     public void setRedisMode(String redisMode) {
         this.redisMode = redisMode;
     }
 
+    public String getRedisHost() {
+        return redisHost;
+    }
+
     public void setRedisHost(String redisHost) {
         this.redisHost = redisHost;
+    }
+
+    public Integer getRedisPort() {
+        return redisPort;
     }
 
     public void setRedisPort(Integer redisPort) {
         this.redisPort = redisPort;
     }
 
+    public String getRedisPassword() {
+        return redisPassword;
+    }
+
     public void setRedisPassword(String redisPassword) {
         this.redisPassword = redisPassword;
     }
 
-    public void setRedisUsername(String redisUsername) {
-        this.redisUsername = redisUsername;
+    public String getRedisSentinelMaster() {
+        return redisSentinelMaster;
     }
 
     public void setRedisSentinelMaster(String redisSentinelMaster) {
         this.redisSentinelMaster = redisSentinelMaster;
     }
 
+    public String getRedisSentinelNodes() {
+        return redisSentinelNodes;
+    }
+
     public void setRedisSentinelNodes(String redisSentinelNodes) {
         this.redisSentinelNodes = redisSentinelNodes;
+    }
+
+    public String getRedisClusterNodes() {
+        return redisClusterNodes;
     }
 
     public void setRedisClusterNodes(String redisClusterNodes) {
         this.redisClusterNodes = redisClusterNodes;
     }
 
-    public void setRedisClusterMaxRedirects(String redisClusterMaxRedirects) {
+    public Integer getRedisClusterMaxRedirects() {
+        return redisClusterMaxRedirects;
+    }
+
+    public void setRedisClusterMaxRedirects(Integer redisClusterMaxRedirects) {
         this.redisClusterMaxRedirects = redisClusterMaxRedirects;
+    }
+
+    public Integer getRedisDatabase() {
+        return redisDatabase;
     }
 
     public void setRedisDatabase(Integer redisDatabase) {
         this.redisDatabase = redisDatabase;
     }
 
+    public Long getSpringRedisTimeout() {
+        return springRedisTimeout;
+    }
+
     public void setSpringRedisTimeout(Long springRedisTimeout) {
         this.springRedisTimeout = springRedisTimeout;
+    }
+
+    public String getSpringRedisSsl() {
+        return springRedisSsl;
     }
 
     public void setSpringRedisSsl(String springRedisSsl) {
         this.springRedisSsl = springRedisSsl;
     }
 
+    public String getRedisUrl() {
+        return redisUrl;
+    }
+
     public void setRedisUrl(String redisUrl) {
         this.redisUrl = redisUrl;
+    }
+
+    public String getRedisClientName() {
+        return redisClientName;
     }
 
     public void setRedisClientName(String redisClientName) {
         this.redisClientName = redisClientName;
     }
 
+    public Integer getSpringRedisLettucePoolMaxActive() {
+        return springRedisLettucePoolMaxActive;
+    }
+
     public void setSpringRedisLettucePoolMaxActive(Integer springRedisLettucePoolMaxActive) {
         this.springRedisLettucePoolMaxActive = springRedisLettucePoolMaxActive;
+    }
+
+    public Integer getSpringRedisLettucePoolMaxIdle() {
+        return springRedisLettucePoolMaxIdle;
     }
 
     public void setSpringRedisLettucePoolMaxIdle(Integer springRedisLettucePoolMaxIdle) {
         this.springRedisLettucePoolMaxIdle = springRedisLettucePoolMaxIdle;
     }
 
+    public Integer getSpringRedisLettucePoolMinIdle() {
+        return springRedisLettucePoolMinIdle;
+    }
+
     public void setSpringRedisLettucePoolMinIdle(Integer springRedisLettucePoolMinIdle) {
         this.springRedisLettucePoolMinIdle = springRedisLettucePoolMinIdle;
     }
 
+    public Integer getSpringRedisLettucePoolMaxWait() {
+        return springRedisLettucePoolMaxWait;
+    }
+
     public void setSpringRedisLettucePoolMaxWait(Integer springRedisLettucePoolMaxWait) {
         this.springRedisLettucePoolMaxWait = springRedisLettucePoolMaxWait;
+    }
+
+    public Long getSpringRedisLettuceShutdownTimeout() {
+        return springRedisLettuceShutdownTimeout;
     }
 
     public void setSpringRedisLettuceShutdownTimeout(Long springRedisLettuceShutdownTimeout) {
