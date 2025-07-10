@@ -59,33 +59,37 @@ public class DynamicRedisConfig {
         return template;
     }
 
+    private void convertRedisUriToRedisConfig() {
+        String scheme = redisConfig.getRedisUrl().split(":")[0];
+        String redisMode = RedisModeEnum.getKeyByScheme(scheme);
+        RedisURI redisURI = RedisURI.create(redisConfig.getRedisUrl());
+        if (redisMode == null) {
+            log.error("redisUri scheme is null,{}", redisConfig.getRedisUrl());
+            throw new RuntimeException("redis url模式仅支持单机和哨兵");
+        }
+        redisConfig.setRedisMode(redisMode);
+        if (RedisModeEnum.SINGLE_MODE.getKey().equals(redisMode)) {
+            redisConfig.setRedisHost(redisURI.getHost());
+            redisConfig.setRedisPort(redisURI.getPort());
+        } else if (RedisModeEnum.SENTINEL_MODE.getKey().equals(redisMode)) {
+            redisConfig.setRedisSentinelMaster(redisURI.getSentinelMasterId());
+            redisConfig.setRedisSentinelNodes(redisURI.getSentinels().stream().map(s -> s.getHost() + ":" + s.getPort()).collect(Collectors.joining(",")));
+        } else {
+            log.error("不支持的redis url scheme,{}", redisConfig.getRedisUrl());
+            throw new RuntimeException("不支持的redis url scheme");
+        }
+        Optional.ofNullable(redisURI.getPassword()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(p -> redisConfig.setRedisPassword(String.valueOf(p)));
+        Optional.ofNullable(redisURI.getUsername()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(redisConfig::setRedisUsername);
+        Optional.of(redisURI.getDatabase()).filter(p -> p != 0).ifPresent(redisConfig::setRedisDatabase);
+        Optional.ofNullable(redisURI.getClientName()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(redisConfig::setRedisClientName);
+        Optional.of(redisURI.isSsl()).filter(p -> p).ifPresent(p -> redisConfig.setSpringRedisSsl(p + ""));
+        Optional.of(redisURI.getTimeout().getSeconds()).filter(p -> p != 0).ifPresent(redisConfig::setSpringRedisTimeout);
+    }
+
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         if (RedisModeEnum.URL_MODE.getKey().equals(redisConfig.getRedisMode())) {
-            String scheme = redisConfig.getRedisUrl().split(":")[0];
-            String redisMode = RedisModeEnum.getKeyByScheme(scheme);
-            RedisURI redisURI = RedisURI.create(redisConfig.getRedisUrl());
-            if (redisMode == null) {
-                log.error("redisUri scheme is null,{}", redisConfig.getRedisUrl());
-                throw new RuntimeException("redis url模式仅支持单机和哨兵");
-            }
-            redisConfig.setRedisMode(redisMode);
-            if (RedisModeEnum.SINGLE_MODE.getKey().equals(redisMode)) {
-                redisConfig.setRedisHost(redisURI.getHost());
-                redisConfig.setRedisPort(redisURI.getPort());
-            } else if (RedisModeEnum.SENTINEL_MODE.getKey().equals(redisMode)) {
-                redisConfig.setRedisSentinelMaster(redisURI.getSentinelMasterId());
-                redisConfig.setRedisSentinelNodes(redisURI.getSentinels().stream().map(s -> s.getHost() + ":" + s.getPort()).collect(Collectors.joining(",")));
-            } else {
-                log.error("不支持的redis url scheme,{}", redisConfig.getRedisUrl());
-                throw new RuntimeException("不支持的redis url scheme");
-            }
-            Optional.ofNullable(redisURI.getPassword()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(p -> redisConfig.setRedisPassword(String.valueOf(p)));
-            Optional.ofNullable(redisURI.getUsername()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(redisConfig::setRedisUsername);
-            Optional.of(redisURI.getDatabase()).filter(p -> p != 0).ifPresent(redisConfig::setRedisDatabase);
-            Optional.ofNullable(redisURI.getClientName()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(redisConfig::setRedisClientName);
-            Optional.of(redisURI.isSsl()).filter(p -> p).ifPresent(p -> redisConfig.setSpringRedisSsl(p + ""));
-            Optional.of(redisURI.getTimeout().getSeconds()).filter(p -> p != 0).ifPresent(redisConfig::setSpringRedisTimeout);
+            convertRedisUriToRedisConfig();
         }
         if (RedisModeEnum.SINGLE_MODE.getKey().equals(redisConfig.getRedisMode())) {
             System.out.println("单机");
