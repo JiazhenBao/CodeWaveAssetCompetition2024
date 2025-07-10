@@ -26,13 +26,13 @@
 // 哨兵
 //        REDIS_CONFIG_MAPPER.put("extensions.redis_template_tool.custom.redisSentinelMaster", "spring.redis.sentinel.master");
 //        REDIS_CONFIG_MAPPER.put("extensions.redis_template_tool.custom.redisSentinelNodes", "spring.redis.sentinel.nodes");
-//        REDIS_CONFIG_MAPPER.put("extensions.redis_template_tool.custom.redisSentinelPassword", "spring.redis.sentinel.password");
 //        //集群
 //        REDIS_CONFIG_MAPPER.put("extensions.redis_template_tool.custom.redisClusterNodes", "spring.redis.cluster.nodes");
 //        REDIS_CONFIG_MAPPER.put("extensions.redis_template_tool.custom.redisClusterMaxRedirects", "spring.redis.cluster.maxRedirects");
 //        //公共
 //  REDIS_CONFIG_MAPPER_COMMON.put("extensions.redis_template_tool.custom.redisDatabase", "spring.redis.database");
 //        REDIS_CONFIG_MAPPER_COMMON.put("extensions.redis_template_tool.custom.redisPassword", "spring.redis.password");
+
 
 //公共builder
 //        REDIS_CONFIG_MAPPER_COMMON.put("extensions.redis_template_tool.custom.redisClientName", "spring.redis.clientName");

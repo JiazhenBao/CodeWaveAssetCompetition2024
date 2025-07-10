@@ -1,5 +1,7 @@
 package com.netease.lib.redistemplatetool.config;
 
+import com.netease.lib.redistemplatetool.util.RedisModeEnum;
+import io.lettuce.core.RedisURI;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Configuration
 public class DynamicRedisConfig {
@@ -24,6 +27,25 @@ public class DynamicRedisConfig {
 
     @Resource
     private RedisConfig redisConfig;
+
+    public static void main(String[] args) {
+//        RedisURI redisUri = RedisURI.Builder.sentinel("sentinel-host1", 26379, "mymaster")
+//                .withSentinel("sentinel-host2", 26379)
+//                .withSentinel("sentinel-host3", 26379)
+//                .withPassword("yourpassword")
+//                .withDatabase(0)
+//                .withTimeout(Duration.ofSeconds(2))
+//                .withSsl(false)  // 如果需要SSL
+//                .build();
+//        rediss-sentinel://yourpassword@sentinel-host1,sentinel-host2,sentinel-host3?sentinelMasterId=mymaster&timeout=2s
+//        redis-sentinel://yourpassword@sentinel-host1,sentinel-host2,sentinel-host3?sentinelMasterId=mymaster&timeout=2s
+
+        RedisURI redisUri = RedisURI.Builder.sentinel("sentinel-host", 26379, "mymaster")
+                .withSsl(true)
+                .build();
+        System.out.println(redisUri.toURI());
+        System.out.println(1);
+    }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory connectionFactory) {
@@ -39,22 +61,47 @@ public class DynamicRedisConfig {
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
-//        if (RedisModeEnum.URL_MODE.getKey().equals(redisConfig.getRedisMode())) {
-//            RedisURI redisURI = RedisURI.create(redisConfig.getRedisUrl());
-//            // 创建配置
-////            RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-////            config.setHostName(redisURI.getHost());
-////            config.setPort(redisURI.getPort());
-//            return createStandaloneConnectionFactory();
-//        } else if (RedisModeEnum.CLUSTER_MODE.getKey().equals(redisConfig.getRedisMode())) {
+        if (RedisModeEnum.URL_MODE.getKey().equals(redisConfig.getRedisMode())) {
+            String scheme = redisConfig.getRedisUrl().split(":")[0];
+            String redisMode = RedisModeEnum.getKeyByScheme(scheme);
+            RedisURI redisURI = RedisURI.create(redisConfig.getRedisUrl());
+            if (redisMode == null) {
+                log.error("redisUri scheme is null,{}", redisConfig.getRedisUrl());
+                throw new RuntimeException("redis url模式仅支持单机和哨兵");
+            }
+            redisConfig.setRedisMode(redisMode);
+            if (RedisModeEnum.SINGLE_MODE.getKey().equals(redisMode)) {
+                redisConfig.setRedisHost(redisURI.getHost());
+                redisConfig.setRedisPort(redisURI.getPort());
+            } else if (RedisModeEnum.SENTINEL_MODE.getKey().equals(redisMode)) {
+                redisConfig.setRedisSentinelMaster(redisURI.getSentinelMasterId());
+                redisConfig.setRedisSentinelNodes(redisURI.getSentinels().stream().map(s -> s.getHost() + ":" + s.getPort()).collect(Collectors.joining(",")));
+            } else {
+                log.error("不支持的redis url scheme,{}", redisConfig.getRedisUrl());
+                throw new RuntimeException("不支持的redis url scheme");
+            }
+            Optional.ofNullable(redisURI.getPassword()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(p -> redisConfig.setRedisPassword(String.valueOf(p)));
+            Optional.ofNullable(redisURI.getUsername()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(redisConfig::setRedisUsername);
+            Optional.of(redisURI.getDatabase()).filter(p -> p != 0).ifPresent(redisConfig::setRedisDatabase);
+            Optional.ofNullable(redisURI.getClientName()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(redisConfig::setRedisClientName);
+            Optional.of(redisURI.isSsl()).filter(p -> p).ifPresent(p -> redisConfig.setSpringRedisSsl(p + ""));
+            Optional.of(redisURI.getTimeout().getSeconds()).filter(p -> p != 0).ifPresent(redisConfig::setSpringRedisTimeout);
+        }
+        if (RedisModeEnum.SINGLE_MODE.getKey().equals(redisConfig.getRedisMode())) {
+            System.out.println("单机");
+            return createStandaloneConnectionFactory();
+        } else if (RedisModeEnum.CLUSTER_MODE.getKey().equals(redisConfig.getRedisMode())) {
+            System.out.println("集群");
+            return null;
 //            return createClusterConnectionFactory();
-//        } else if (RedisModeEnum.SINGLE_MODE.getKey().equals(redisConfig.getRedisMode())) {
-        return createStandaloneConnectionFactory();
-//        } else if (RedisModeEnum.SENTINEL_MODE.getKey().equals(redisConfig.getRedisMode())) {
+        } else if (RedisModeEnum.SENTINEL_MODE.getKey().equals(redisConfig.getRedisMode())) {
+            System.out.println("哨兵");
+            return null;
 //            return createSentinelConnectionFactory();
-//        } else {
-//            return null;
-//        }
+        } else {
+            log.error("redis mode异常,{}", redisConfig.getRedisMode());
+            throw new RuntimeException("不支持的redis mode");
+        }
     }
 
 

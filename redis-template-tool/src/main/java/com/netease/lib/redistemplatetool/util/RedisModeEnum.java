@@ -1,33 +1,38 @@
 package com.netease.lib.redistemplatetool.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public enum RedisModeEnum {
     // url
-    URL_MODE("1", Arrays.asList("extensions.redis_template_tool.custom.redisUrl")),
+    URL_MODE("1", new ArrayList<>()),
     //单机
-    SINGLE_MODE("2", Arrays.asList("extensions.redis_template_tool.custom.redisHost", "extensions.redis_template_tool.custom.redisPort")),
+    SINGLE_MODE("2", Arrays.asList("redis", "rediss")),
     //哨兵
-    SENTINEL_MODE("3", Arrays.asList("extensions.redis_template_tool.custom.redisSentinelMaster", "extensions.redis_template_tool.custom.redisSentinelNodes", "extensions.redis_template_tool.custom.redisSentinelPassword")),
+    SENTINEL_MODE("3", Arrays.asList("redis-sentinel", "rediss-sentinel")),
     //集群
-    CLUSTER_MODE("4", Arrays.asList("extensions.redis_template_tool.custom.redisClusterNodes", "extensions.redis_template_tool.custom.redisClusterMaxRedirects")),
+    CLUSTER_MODE("4", new ArrayList<>()),
     ;
 
     private final String key;
-    private final List<String> dataMap;
+    private final List<String> schemes;
 
     // 构造函数
-    RedisModeEnum(String key, List<String> dataMap) {
-        this.dataMap = dataMap;
+    RedisModeEnum(String key, List<String> schemes) {
+        this.schemes = schemes;
         this.key = key;
     }
 
-    public static List<String> getRedisModeValueByKey(String key) {
-        RedisModeEnum[] redisModeEnums = RedisModeEnum.values();
-        for (int i = 0; i < redisModeEnums.length; i++) {
-            if (redisModeEnums[i].getKey().equals(key)) {
-                return redisModeEnums[i].getDataMap();
+    /**
+     * 根据scheme获取key
+     *
+     * @return
+     */
+    public static String getKeyByScheme(String scheme) {
+        for (RedisModeEnum value : RedisModeEnum.values()) {
+            if (value.schemes.contains(scheme)) {
+                return value.key;
             }
         }
         return null;
@@ -35,9 +40,5 @@ public enum RedisModeEnum {
 
     public String getKey() {
         return key;
-    }
-
-    public List<String> getDataMap() {
-        return dataMap;
     }
 }

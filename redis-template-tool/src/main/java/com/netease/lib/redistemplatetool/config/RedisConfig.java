@@ -68,12 +68,6 @@ public class RedisConfig {
     @Value("${redisClusterMaxRedirects}")
     public String redisClusterMaxRedirects;
     /**
-     * redis哨兵密码
-     */
-    @NaslConfiguration
-    @Value("${redisSentinelPassword}")
-    public String redisSentinelPassword;
-    /**
      * Redis 数据库索引
      */
     @NaslConfiguration
@@ -92,7 +86,7 @@ public class RedisConfig {
     @Value("${springRedisSsl}")
     public String springRedisSsl;
     /**
-     * redis url
+     * redis url，仅支持单机和哨兵
      */
     @NaslConfiguration
     @Value("${redisUrl}")
@@ -170,10 +164,6 @@ public class RedisConfig {
         return redisClusterMaxRedirects;
     }
 
-    public String getRedisSentinelPassword() {
-        return redisSentinelPassword;
-    }
-
     public Integer getRedisDatabase() {
         return redisDatabase;
     }
@@ -212,5 +202,81 @@ public class RedisConfig {
 
     public Long getSpringRedisLettuceShutdownTimeout() {
         return springRedisLettuceShutdownTimeout;
+    }
+
+    public void setRedisMode(String redisMode) {
+        this.redisMode = redisMode;
+    }
+
+    public void setRedisHost(String redisHost) {
+        this.redisHost = redisHost;
+    }
+
+    public void setRedisPort(Integer redisPort) {
+        this.redisPort = redisPort;
+    }
+
+    public void setRedisPassword(String redisPassword) {
+        this.redisPassword = redisPassword;
+    }
+
+    public void setRedisUsername(String redisUsername) {
+        this.redisUsername = redisUsername;
+    }
+
+    public void setRedisSentinelMaster(String redisSentinelMaster) {
+        this.redisSentinelMaster = redisSentinelMaster;
+    }
+
+    public void setRedisSentinelNodes(String redisSentinelNodes) {
+        this.redisSentinelNodes = redisSentinelNodes;
+    }
+
+    public void setRedisClusterNodes(String redisClusterNodes) {
+        this.redisClusterNodes = redisClusterNodes;
+    }
+
+    public void setRedisClusterMaxRedirects(String redisClusterMaxRedirects) {
+        this.redisClusterMaxRedirects = redisClusterMaxRedirects;
+    }
+
+    public void setRedisDatabase(Integer redisDatabase) {
+        this.redisDatabase = redisDatabase;
+    }
+
+    public void setSpringRedisTimeout(Long springRedisTimeout) {
+        this.springRedisTimeout = springRedisTimeout;
+    }
+
+    public void setSpringRedisSsl(String springRedisSsl) {
+        this.springRedisSsl = springRedisSsl;
+    }
+
+    public void setRedisUrl(String redisUrl) {
+        this.redisUrl = redisUrl;
+    }
+
+    public void setRedisClientName(String redisClientName) {
+        this.redisClientName = redisClientName;
+    }
+
+    public void setSpringRedisLettucePoolMaxActive(Integer springRedisLettucePoolMaxActive) {
+        this.springRedisLettucePoolMaxActive = springRedisLettucePoolMaxActive;
+    }
+
+    public void setSpringRedisLettucePoolMaxIdle(Integer springRedisLettucePoolMaxIdle) {
+        this.springRedisLettucePoolMaxIdle = springRedisLettucePoolMaxIdle;
+    }
+
+    public void setSpringRedisLettucePoolMinIdle(Integer springRedisLettucePoolMinIdle) {
+        this.springRedisLettucePoolMinIdle = springRedisLettucePoolMinIdle;
+    }
+
+    public void setSpringRedisLettucePoolMaxWait(Integer springRedisLettucePoolMaxWait) {
+        this.springRedisLettucePoolMaxWait = springRedisLettucePoolMaxWait;
+    }
+
+    public void setSpringRedisLettuceShutdownTimeout(Long springRedisLettuceShutdownTimeout) {
+        this.springRedisLettuceShutdownTimeout = springRedisLettuceShutdownTimeout;
     }
 }
