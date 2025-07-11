@@ -1,5 +1,6 @@
 package com.netease.lib.redistemplatetool.config;
 
+import com.netease.lib.redistemplatetool.spring.LettuceVersionCheckUtil;
 import com.netease.lib.redistemplatetool.util.RedisModeEnum;
 import io.lettuce.core.RedisURI;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -73,6 +74,7 @@ public class DynamicRedisConfig {
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
+        LettuceVersionCheckUtil.lettuceVersionCheckTask();
         if (RedisModeEnum.URL_MODE.getKey().equals(redisConfig.getRedisMode())) {
             convertRedisUriToRedisConfig();
         }
