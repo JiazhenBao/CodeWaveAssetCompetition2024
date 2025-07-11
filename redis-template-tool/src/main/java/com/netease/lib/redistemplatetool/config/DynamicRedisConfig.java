@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisNode;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -30,25 +31,6 @@ public class DynamicRedisConfig {
 
     @Resource
     private RedisConfig redisConfig;
-
-    public static void main(String[] args) {
-//        RedisURI redisUri = RedisURI.Builder.sentinel("sentinel-host1", 26379, "mymaster")
-//                .withSentinel("sentinel-host2", 26379)
-//                .withSentinel("sentinel-host3", 26379)
-//                .withPassword("yourpassword")
-//                .withDatabase(0)
-//                .withTimeout(Duration.ofSeconds(2))
-//                .withSsl(false)  // 如果需要SSL
-//                .build();
-//        rediss-sentinel://yourpassword@sentinel-host1,sentinel-host2,sentinel-host3?sentinelMasterId=mymaster&timeout=2s
-//        redis-sentinel://yourpassword@sentinel-host1,sentinel-host2,sentinel-host3?sentinelMasterId=mymaster&timeout=2s
-
-        RedisURI redisUri = RedisURI.Builder.sentinel("sentinel-host", 26379, "mymaster")
-                .withSsl(true)
-                .build();
-        System.out.println(redisUri.toURI());
-        System.out.println(1);
-    }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory connectionFactory) {
@@ -99,9 +81,7 @@ public class DynamicRedisConfig {
         } else if (RedisModeEnum.CLUSTER_MODE.getKey().equals(redisConfig.getRedisMode())) {
             return createClusterConnectionFactory();
         } else if (RedisModeEnum.SENTINEL_MODE.getKey().equals(redisConfig.getRedisMode())) {
-//            todo
-            return null;
-//            return createSentinelConnectionFactory();
+            return createSentinelConnectionFactory();
         } else {
             log.error("redis mode异常,{}", redisConfig.getRedisMode());
             throw new RuntimeException("不支持的redis mode");
@@ -111,8 +91,11 @@ public class DynamicRedisConfig {
     private LettuceConnectionFactory createStandaloneConnectionFactory() {
         // 单机模式配置
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        Optional.ofNullable(redisConfig.getRedisHost()).filter(h -> !StringUtils.isEmpty(h)).ifPresent(config::setHostName);
-        Optional.ofNullable(redisConfig.getRedisPort()).ifPresent(config::setPort);
+        if (redisConfig.getRedisPort() == null || StringUtils.isEmpty(redisConfig.getRedisPort())) {
+            throw new RuntimeException("redis port/host is null");
+        }
+        config.setPort(redisConfig.getRedisPort());
+        config.setHostName(redisConfig.getRedisHost());
         Optional.ofNullable(redisConfig.getRedisPassword()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(config::setPassword);
         Optional.ofNullable(redisConfig.getRedisUsername()).filter(u -> !StringUtils.isEmpty(u)).ifPresent(config::setUsername);
         Optional.ofNullable(redisConfig.getRedisDatabase()).ifPresent(config::setDatabase);
@@ -136,17 +119,25 @@ public class DynamicRedisConfig {
         Optional.ofNullable(redisConfig.getRedisUsername()).filter(u -> !StringUtils.isEmpty(u)).ifPresent(config::setUsername);
         return new LettuceConnectionFactory(config, buildLettuceClientConfiguration());
     }
-//
-//    private LettuceConnectionFactory createSentinelConnectionFactory() {
-//        // 哨兵模式配置
-//        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration()
-//                .master("mymaster")
-//                .sentinel("sentinel1", 26379)
-//                .sentinel("sentinel2", 26379)
-//                .sentinel("sentinel3", 26379);
-//        sentinelConfig.setPassword("yourpassword");
-//        return new LettuceConnectionFactory(sentinelConfig);
-//    }
+
+    private LettuceConnectionFactory createSentinelConnectionFactory() {
+        // 哨兵模式配置
+        RedisSentinelConfiguration config = new RedisSentinelConfiguration();
+        try {
+            Arrays.stream(redisConfig.getRedisSentinelNodes().split(",")).forEach(n -> {
+                String[] hostAndPort = n.split(":");
+                config.addSentinel(new RedisNode(hostAndPort[0], Integer.parseInt(hostAndPort[1])));
+            });
+        } catch (Exception e) {
+            log.error("redis sentinel nodes格式异常,{}", redisConfig.getRedisClusterNodes());
+            throw new RuntimeException("redis sentinel nodes格式异常");
+        }
+        config.setMaster(redisConfig.getRedisSentinelMaster());
+        Optional.ofNullable(redisConfig.getRedisDatabase()).ifPresent(config::setDatabase);
+        Optional.ofNullable(redisConfig.getRedisPassword()).filter(p -> !StringUtils.isEmpty(p)).ifPresent(config::setPassword);
+        Optional.ofNullable(redisConfig.getRedisUsername()).filter(u -> !StringUtils.isEmpty(u)).ifPresent(config::setUsername);
+        return new LettuceConnectionFactory(config, buildLettuceClientConfiguration());
+    }
 
 
     private LettuceClientConfiguration buildLettuceClientConfiguration() {
