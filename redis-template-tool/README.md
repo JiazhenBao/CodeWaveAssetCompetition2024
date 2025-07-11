@@ -17,9 +17,36 @@
 3. 支持ACL。6.x以上版本redis依赖库，**须配置username时**，可使用2.x版本依赖库配合翻译器插件使用
 
 
-# 参数说明
+# 配置参数示例
+## 单机
+      redisMode: '2'
+      redisHost: '127.0.0.1'
+      redisPort: '6379'
+      redisPassword: 'admin456'
+      redisClusterNodes: ''
+      redisUsername: ''
+      redisUrl: ''
+      redisSentinelMaster: ''
+      redisSentinelNodes: ''
+## 集群
+      redisMode: '4'
+      redisHost: ''
+      redisPort: ''
+      redisPassword: 'admin123'
+      redisClusterNodes: '10.242.41.153:7001,10.242.41.153:7002,10.242.41.153:7003'
+      redisUrl: ''
+      redisUsername: 'myadmin'
+      redisSentinelMaster: ''
+      redisSentinelNodes: ''
+## 哨兵
+      redisMode: '3'
+      redisHost: ''
+      redisPort: ''
+      redisPassword: 'admin123'
+      redisClusterNodes: ''
+      redisUrl: ''
+      redisUsername: 'myadmin'
+      redisSentinelMaster: 'redis-master'
+      redisSentinelNodes: '117.187.150.155:26379,117.187.150.155:26380,117.187.150.155:26381'
 
-配置参数说明：
-
-# 接口说明
 
