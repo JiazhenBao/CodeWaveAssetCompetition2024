@@ -10,7 +10,4 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan(basePackageClasses = LibraryAutoScan.class)
 public class CommonEsSearchSpringEnvironmentConfiguration {
-    public CommonEsSearchSpringEnvironmentConfiguration() {
-        System.out.println("EsSearchSpringEnvironmentConfiguration");
-    }
 }
