@@ -433,7 +433,7 @@ public class EasyExcelTools {
     }
 
     /**
-     * [推荐] 解析excel
+     * [推荐] 解析excel-数据传入handle
      *
      * @param handle
      * @param request
@@ -472,6 +472,48 @@ public class EasyExcelTools {
             return ParseBigDataResponse.FAIL("文件下载失败", e.getMessage() + Arrays.toString(e.getStackTrace()));
         }
         return ParseBigDataResponse.OK(readListener.getTotal());
+    }
+
+
+    /**
+     * [推荐] 解析excel-数据直接返回
+     *
+     * @param request
+     * @return
+     */
+    @NaslLogic
+    public static ParseBigDataResponse parseBigDataExcelNoSave(ParseRequest request) {
+
+        if (Objects.isNull(request) || StringUtils.isBlank(request.fullClassName)) {
+            return ParseBigDataResponse.FAIL("请求参数为空,fullClassName不能为空！");
+        }
+        if (StringUtils.isBlank(request.url)) {
+            return ParseBigDataResponse.FAIL("文件url不能为空！");
+        }
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(request.getFullClassName(), false, Thread.currentThread().getContextClassLoader());
+        } catch (ClassNotFoundException e) {
+            log.error("加载类失败", e);
+            return ParseBigDataResponse.FAIL(String.format("加载类[%s]失败！", request.getFullClassName()), e.getMessage() + Arrays.toString(e.getStackTrace()));
+        }
+
+        LibraryReadListener<?> readListener = new LibraryReadListener<>(null, clazz, request, fileUtils);
+        SimpleReadCacheSelector simpleReadCacheSelector = new SimpleReadCacheSelector();
+        // 放多少批数据在内存，默认20
+        if (Objects.nonNull(request.getMaxCacheActivateBatchCount())) {
+            simpleReadCacheSelector.setMaxCacheActivateBatchCount(request.getMaxCacheActivateBatchCount());
+        }
+        try (InputStream inputStream = openUrlStream(request.getUrl())) {
+            EasyExcel.read(inputStream, clazz, readListener).readCacheSelector(simpleReadCacheSelector).sheet().doRead();
+        } catch (RuntimeException e) {
+            log.error("excel解析失败", e);
+            return ParseBigDataResponse.FAIL("excel解析失败！", e.getMessage() + Arrays.toString(e.getStackTrace()));
+        } catch (IOException e) {
+            log.error("文件下载失败", e);
+            return ParseBigDataResponse.FAIL("文件下载失败", e.getMessage() + Arrays.toString(e.getStackTrace()));
+        }
+        return ParseBigDataResponse.OK(readListener.getTotal(), readListener.getCachedDataList());
     }
 
     /**

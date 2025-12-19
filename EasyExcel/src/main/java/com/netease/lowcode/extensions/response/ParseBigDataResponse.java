@@ -2,6 +2,8 @@ package com.netease.lowcode.extensions.response;
 
 import com.netease.lowcode.core.annotation.NaslStructure;
 
+import java.util.List;
+
 @NaslStructure
 public class ParseBigDataResponse {
 
@@ -12,12 +14,16 @@ public class ParseBigDataResponse {
     public Double cost;// 处理耗时,单位 s
     public Double size;// 文件大小,单位字节
     public Long total;// 统计导入条数
+    /**
+     * 数据列表
+     */
+    public List<String> dataList;
 
     public static ParseBigDataResponse FAIL(String msg) {
-        return FAIL(msg,null);
+        return FAIL(msg, null);
     }
 
-    public static ParseBigDataResponse FAIL(String msg,String trace){
+    public static ParseBigDataResponse FAIL(String msg, String trace) {
         ParseBigDataResponse fail = new ParseBigDataResponse();
         fail.setSuccess(false);
         fail.setMsg(msg);
@@ -27,6 +33,13 @@ public class ParseBigDataResponse {
 
     public static ParseBigDataResponse OK() {
         return OK("success");
+    }
+
+    public static ParseBigDataResponse OK(Long total, List<String> dataList) {
+        ParseBigDataResponse ok = OK();
+        ok.setTotal(total);
+        ok.setDataList(dataList);
+        return ok;
     }
 
     public static ParseBigDataResponse OK(Long total) {
@@ -40,6 +53,10 @@ public class ParseBigDataResponse {
         ok.setSuccess(true);
         ok.setMsg(msg);
         return ok;
+    }
+
+    public void setDataList(List<String> dataList) {
+        this.dataList = dataList;
     }
 
     public Boolean getSuccess() {

@@ -85,7 +85,7 @@ public class LibraryReadListener<T> implements ReadListener<T> {
     }
 
 
-    private List<String> toJsonString(List<T> data) {
+    public List<String> toJsonString(List<T> data) {
         // https://blog.csdn.net/fenglllle/article/details/114293427
         // 使用fastjson2会出现classloader问题(cast to exception)
 
@@ -131,8 +131,10 @@ public class LibraryReadListener<T> implements ReadListener<T> {
         // 解析到一条数据，加入缓存
         cachedDataList.add(data);
         if (cachedDataList.size() >= BATCH_COUNT) {
-            // 调用function处理数据
-            handle.apply(toJsonString(cachedDataList));
+            if (handle != null) {
+                // 调用function处理数据
+                handle.apply(toJsonString(cachedDataList));
+            }
             // 处理完清理list
             cachedDataList = ListUtils.newArrayListWithExpectedSize(BATCH_COUNT);
         }
@@ -216,8 +218,10 @@ public class LibraryReadListener<T> implements ReadListener<T> {
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
-        // 调用function处理数据
-        handle.apply(toJsonString(cachedDataList));
+        if (handle != null) {
+            // 调用function处理数据
+            handle.apply(toJsonString(cachedDataList));
+        }
         // 数据处理完成
     }
 
@@ -239,6 +243,15 @@ public class LibraryReadListener<T> implements ReadListener<T> {
     @Override
     public boolean hasNext(AnalysisContext context) {
         return ReadListener.super.hasNext(context);
+    }
+
+    /**
+     * 获取缓存数据
+     *
+     * @return
+     */
+    public List<String> getCachedDataList() {
+        return toJsonString(cachedDataList);
     }
 
     /**
