@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -51,8 +52,9 @@ public class AsyncLogicAnnotationConfigUtil {
             JSONObject annoObj = (JSONObject) anno;
             String logicName = annoObj.getString("logicName");
             JSONObject annotationProperties = annoObj.getJSONObject("annotationProperties");
-            if ("true".equals(annotationProperties.getString("useAnno"))) {
+            if ("true".equals(annotationProperties.getString("useAnno")) && !StringUtils.isEmpty(logicName)) {
                 result.add(logicName);
+                result.add(NamingUtils.toLowerCamelCase(logicName));
             }
         });
         useAnnoLogicNames.put(annoName, result);
