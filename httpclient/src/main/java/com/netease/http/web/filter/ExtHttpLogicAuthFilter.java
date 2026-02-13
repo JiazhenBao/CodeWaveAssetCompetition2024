@@ -70,7 +70,6 @@ public class ExtHttpLogicAuthFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if ("0".equals(this.getExpandLogicAuthFlag())) {
-            log.debug("逻辑鉴权开关关闭");
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
@@ -80,7 +79,6 @@ public class ExtHttpLogicAuthFilter implements Filter {
         String requestURI = httpRequest.getRequestURI();
         String method = httpRequest.getMethod();
         String logicIdentifier = requestURI + LOGIC_IDENTIFIER_SEPARATOR + method;
-        log.info("当前请求的逻辑标识: {}", logicIdentifier);
         try {
             if ("1".equals(this.getExpandLogicAuthFlag()) || "3".equals(this.getExpandLogicAuthFlag())) {
                 Map userInfo = getSession(httpRequest);
