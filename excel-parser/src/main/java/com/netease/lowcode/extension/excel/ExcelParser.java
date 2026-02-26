@@ -18,7 +18,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,8 @@ public class ExcelParser {
      * @param columnFieldMap 列映射:key表示列的索引,value表示映射的字段名称
      * @param row            表头的行数
      * @param clazz          映射类
-     * @return
      * @param <T>
+     * @return
      */
     public static <T> ExcelParseResult<T> parseAllSheet(String url, ExcelParseRect rect, Map<String, String> columnFieldMap, Long row, Class<T> clazz) {
         return parseBySheetName(url, null, rect, columnFieldMap, row, clazz);
@@ -161,24 +162,25 @@ public class ExcelParser {
 
     /**
      * 获取文件下载路径，因为是请求本服务所以替换域名为localhost避免出现一些hostname unknown的情况
+     *
      * @param url
      * @return
      */
     private static String getFileUrl(String url) {
         int index = url.indexOf("/upload/");
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        int port = request.getLocalPort();
-        String contextPath = request.getContextPath();
-
-        if (index >= 0) {
-            //制品中上传文件后的url
-            url = "http://localhost:" + port + "/upload/" + url.substring(index + "/upload/".length());
-
-            if (StringUtils.isNotBlank(contextPath) && !"/".equals(contextPath)) {
-                url = "http://localhost:" + port + contextPath + "/upload/" + url.substring(index + "/upload/".length());
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (servletRequestAttributes != null) {
+            HttpServletRequest request = servletRequestAttributes.getRequest();
+            int port = request.getLocalPort();
+            String contextPath = request.getContextPath();
+            if (index >= 0) {
+                //制品中上传文件后的url
+                url = "http://localhost:" + port + "/upload/" + url.substring(index + "/upload/".length());
+                if (StringUtils.isNotBlank(contextPath) && !"/".equals(contextPath)) {
+                    url = "http://localhost:" + port + contextPath + "/upload/" + url.substring(index + "/upload/".length());
+                }
             }
         }
-
         log.info("文件下载路径{}", url);
         return url;
     }
