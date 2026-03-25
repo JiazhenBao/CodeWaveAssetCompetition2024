@@ -29,7 +29,7 @@ public class AsyncLogicAnnotationConfigUtil {
             JSONArray array = JSONObject.parseArray(new String(bdata, StandardCharsets.UTF_8));
             return array;
         } catch (Exception e) {
-            log.error("readAnnotationFile error", e);
+            log.warn("readAnnotationFile error", e);
             // 处理异常
             return null;
         }

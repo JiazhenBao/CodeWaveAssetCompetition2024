@@ -26,7 +26,7 @@ import java.util.function.Function;
 @Component
 public class FunctionManagerApi {
 
-    private static final Logger logger = LoggerFactory.getLogger("LCAP_CUSTOMIZE_LOGGER");
+    private static final Logger logger = LoggerFactory.getLogger("LCAP_EXTENSION_LOGGER");
 
     /**
      * 逻辑关键词，逻辑
